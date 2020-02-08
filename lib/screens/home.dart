@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:ungshoppee/utility/my_style.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -7,10 +7,22 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  // Field
+
+  // Method
+  Widget searchButton() {
+    return IconButton(
+      icon: Icon(Icons.search),
+      onPressed: () {},
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(actions: <Widget>[searchButton()],
+        title: Text(MyStyle().appName),
+      ),
     );
   }
 }
