@@ -25,9 +25,13 @@ class _DetailState extends State<Detail> {
   Widget orderButton() {
     return FloatingActionButton(
       child: Icon(Icons.add),
-      onPressed: () {},
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
     );
   }
+
+  Future<void> addValueToSQLite()async{}
 
   @override
   Widget build(BuildContext context) {
