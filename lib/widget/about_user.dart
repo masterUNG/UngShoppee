@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ungshoppee/utility/normal_dialog.dart';
 import 'package:ungshoppee/widget/authen.dart';
 
@@ -13,6 +14,7 @@ class _AboutUserState extends State<AboutUser> {
   String name, user, password;
   bool statusFlat = true, statusCheck;
   Widget currentWidget;
+  String nameLogin;
 
   // Method
   @override
@@ -20,6 +22,20 @@ class _AboutUserState extends State<AboutUser> {
     super.initState();
     currentWidget = Authen();
     statusCheck = false;
+    checkRemember();
+  }
+
+  Future<void> checkRemember() async {
+    try {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      bool remember = sharedPreferences.getBool('Remember');
+      if (remember) {
+        setState(() {
+          nameLogin = sharedPreferences.getString('Name');
+        });
+      }
+    } catch (e) {}
   }
 
   Widget registerButton() {
@@ -55,7 +71,7 @@ class _AboutUserState extends State<AboutUser> {
         statusFlat = !statusFlat;
       });
     } else {
-      print('Cannot Register');
+      normalDialog(context, 'Register False', 'Please Try Agains');
     }
   }
 
@@ -165,16 +181,50 @@ class _AboutUserState extends State<AboutUser> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget showInfo() {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          showContent(),
-          flatButton(),
+          Text('Welcome $nameLogin'),
+          FlatButton(
+            onPressed: () {
+                clearPreferance();
+            },
+            child: Text(
+              'Sign Out',
+              style: TextStyle(color: Colors.pink),
+            ),
+          )
         ],
       ),
+    );
+  }
+
+  Future<void> clearPreferance()async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences.clear();
+
+    setState(() {
+      nameLogin = null;
+    });
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: nameLogin == null ? nonLogin() : showInfo(),
+    );
+  }
+
+  Column nonLogin() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        showContent(),
+        flatButton(),
+      ],
     );
   }
 }

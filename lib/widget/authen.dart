@@ -2,7 +2,9 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ungshoppee/models/user_model.dart';
+import 'package:ungshoppee/utility/normal_dialog.dart';
 
 class Authen extends StatefulWidget {
   @override
@@ -10,10 +12,10 @@ class Authen extends StatefulWidget {
 }
 
 class _AuthenState extends State<Authen> {
-
   // Field
   String user, password;
   bool statusCheck = false;
+  UserModel loginUserModel;
 
   // Method
 
@@ -26,7 +28,6 @@ class _AuthenState extends State<Authen> {
           passwordForm(),
           rememberMe(),
           loginButton(),
-         
         ],
       ),
     );
@@ -49,21 +50,66 @@ class _AuthenState extends State<Authen> {
     );
   }
 
-  
-
   Future<void> checkAuthen() async {
     String url =
         'https://www.androidthai.in.th/ong/getUserWhereUser.php?isAdd=true&User=$user';
     Response response = await Dio().get(url);
+    // print('response = $response');
 
     if (response.toString() == 'null') {
-      print('User False');
+      normalDialog(context, 'User False', 'No $user in my Database');
+    } else {
+      var result = json.decode(response.data);
+      // print('result = $result');
+      for (var map in result) {
+        UserModel userModel = UserModel.fromJson(map);
+
+        if (password == userModel.password) {
+          // Password True
+          // print('statusCheck = $statusCheck');
+          if (statusCheck) {
+            saveSharePreferance(userModel);
+          } else {
+            findLogin(userModel.id);
+          }
+        } else {
+          normalDialog(
+              context, 'Password False', 'Please Try Agains Password False');
+        }
+      }
+    }
+  }
+
+  Future findLogin(String id) async {
+    String url =
+        'https://www.androidthai.in.th/ong/getUserWhereIdUng.php?isAdd=true&id=$id';
+
+    Response response = await Dio().get(url);
+    if (response.toString() == 'null') {
+      normalDialog(context, 'Find Login False', 'Please Try Again');
     } else {
       var result = json.decode(response.data);
       for (var map in result) {
-        UserModel userModel = UserModel.fromJson(map);
+
+        setState(() {
+          loginUserModel = UserModel.fromJson(map);
+        });
+
       }
     }
+  }
+
+  Future<void> saveSharePreferance(UserModel userModel) async {
+    try {
+      SharedPreferences sharedPreferences =
+          await SharedPreferences.getInstance();
+      sharedPreferences.setBool('Remember', true);
+      sharedPreferences.setString('id', userModel.id);
+      sharedPreferences.setString('Name', userModel.name);
+      
+
+      findLogin(userModel.id);
+    } catch (e) {}
   }
 
   Widget loginButton() {
@@ -72,8 +118,11 @@ class _AuthenState extends State<Authen> {
       child: RaisedButton(
         child: Text('Login'),
         onPressed: () {
-          if (user.isEmpty || password.isEmpty) {
-            print('Have Space');
+          if (user == null ||
+              user.isEmpty ||
+              password == null ||
+              password.isEmpty) {
+            normalDialog(context, 'Have Space', 'Please Fill Every Blank');
           } else {
             checkAuthen();
           }
@@ -82,10 +131,10 @@ class _AuthenState extends State<Authen> {
     );
   }
 
-
   Widget passwordForm() {
     return Container(
       child: TextField(
+        obscureText: true,
         onChanged: (String string) {
           password = string.trim();
         },
@@ -97,7 +146,6 @@ class _AuthenState extends State<Authen> {
       width: 250.0,
     );
   }
-
 
   Widget userForm() {
     return Container(
@@ -114,8 +162,12 @@ class _AuthenState extends State<Authen> {
     );
   }
 
+  Widget showInfo(){
+    return Text('Welcome ${loginUserModel.name}');
+  }
+
   @override
   Widget build(BuildContext context) {
-    return authenForm();
+    return loginUserModel == null ? authenForm() : showInfo();
   }
 }
