@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:ungshoppee/utility/normal_dialog.dart';
 import 'package:ungshoppee/widget/authen.dart';
 
 class AboutUser extends StatefulWidget {
@@ -33,7 +34,7 @@ class _AboutUserState extends State<AboutUser> {
               user.isEmpty ||
               password == null ||
               password.isEmpty) {
-            print('Have Space');
+            normalDialog(context, 'Have Space', 'Please Fill Every Blank');
           } else {
             registerThread();
           }
@@ -48,7 +49,11 @@ class _AboutUserState extends State<AboutUser> {
 
     Response response = await Dio().get(url);
     if (response.toString() == 'true') {
-      print('Register Success');
+      normalDialog(context, 'Congratulation', 'Welcome $name Please Login');
+      setState(() {
+        currentWidget = Authen();
+        statusFlat = !statusFlat;
+      });
     } else {
       print('Cannot Register');
     }
@@ -108,7 +113,6 @@ class _AboutUserState extends State<AboutUser> {
           userForm(),
           passwordForm(),
           registerButton(),
-          
         ],
       ),
     );
@@ -137,7 +141,6 @@ class _AboutUserState extends State<AboutUser> {
   }
 
   Widget flatButton() {
-
     List<String> label = ['New Register', 'Back to Login'];
 
     return FlatButton(
@@ -165,7 +168,8 @@ class _AboutUserState extends State<AboutUser> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(mainAxisSize: MainAxisSize.min,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           showContent(),
           flatButton(),
