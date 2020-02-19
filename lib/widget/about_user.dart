@@ -1,8 +1,6 @@
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:ungshoppee/models/user_model.dart';
+import 'package:ungshoppee/widget/authen.dart';
 
 class AboutUser extends StatefulWidget {
   @override
@@ -12,9 +10,17 @@ class AboutUser extends StatefulWidget {
 class _AboutUserState extends State<AboutUser> {
   // Field
   String name, user, password;
-  bool status = true;
+  bool statusFlat = true, statusCheck;
+  Widget currentWidget;
 
   // Method
+  @override
+  void initState() {
+    super.initState();
+    currentWidget = Authen();
+    statusCheck = false;
+  }
+
   Widget registerButton() {
     return Container(
       width: 250.0,
@@ -43,9 +49,6 @@ class _AboutUserState extends State<AboutUser> {
     Response response = await Dio().get(url);
     if (response.toString() == 'true') {
       print('Register Success');
-      setState(() {
-        status = false;
-      });
     } else {
       print('Cannot Register');
     }
@@ -96,58 +99,6 @@ class _AboutUserState extends State<AboutUser> {
     );
   }
 
-  Widget loginButton() {
-    return Container(
-      width: 250.0,
-      child: RaisedButton(
-        child: Text('Login'),
-        onPressed: () {
-
-          if (user.isEmpty || password.isEmpty) {
-            print('Have Space');
-          } else {
-            checkAuthen();
-          }
-
-        },
-      ),
-    );
-  }
-
-  Future<void> checkAuthen()async{
-
-    String url = 'https://www.androidthai.in.th/ong/getUserWhereUser.php?isAdd=true&User=$user';
-    Response response = await Dio().get(url);
-
-    if (response.toString() == 'null') {
-      print('User False');
-    } else {
-
-      var result = json.decode(response.data);
-      for (var map in result) {
-        UserModel userModel = UserModel.fromJson(map);
-        
-      }
-
-
-    }
-
-
-  }
-
-  Widget authenForm() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          userForm(),
-          passwordForm(),
-          loginButton(),
-        ],
-      ),
-    );
-  }
-
   Widget registerForm() {
     return Center(
       child: Column(
@@ -157,13 +108,69 @@ class _AboutUserState extends State<AboutUser> {
           userForm(),
           passwordForm(),
           registerButton(),
+          
         ],
+      ),
+    );
+  }
+
+  Widget loginFlatButton() {
+    return FlatButton(
+      onPressed: () {
+        setState(() {
+          currentWidget = Authen();
+        });
+      },
+      child: Text(
+        'Back to Login',
+        style: TextStyle(color: Colors.pink),
+      ),
+    );
+  }
+
+  Widget showContent() {
+    return currentWidget == null
+        ? Center(
+            child: CircularProgressIndicator(),
+          )
+        : currentWidget;
+  }
+
+  Widget flatButton() {
+
+    List<String> label = ['New Register', 'Back to Login'];
+
+    return FlatButton(
+      onPressed: () {
+        setState(() {
+          if (statusFlat) {
+            currentWidget = registerForm();
+            statusFlat = !statusFlat;
+          } else {
+            currentWidget = Authen();
+            statusFlat = !statusFlat;
+          }
+        });
+      },
+      child: Text(
+        statusFlat ? label[0] : label[1],
+        style: TextStyle(
+          color: Colors.pink,
+          fontStyle: FontStyle.italic,
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return status ? registerForm() : authenForm();
+    return Center(
+      child: Column(mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          showContent(),
+          flatButton(),
+        ],
+      ),
+    );
   }
 }
