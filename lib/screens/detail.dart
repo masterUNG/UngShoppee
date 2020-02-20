@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ungshoppee/models/order_model.dart';
 import 'package:ungshoppee/models/product_model.dart';
 import 'package:ungshoppee/utility/my_style.dart';
 
@@ -14,6 +15,7 @@ class Detail extends StatefulWidget {
 class _DetailState extends State<Detail> {
   // Field
   ProductModel currentProductModel;
+  OrderHelper orderHelper = OrderHelper();
 
   // Method
   @override
@@ -26,16 +28,32 @@ class _DetailState extends State<Detail> {
     return FloatingActionButton(
       child: Icon(Icons.add),
       onPressed: () {
-        Navigator.of(context).pop();
+        addValueToSQLite();
+
+        // Navigator.of(context).pop();
       },
     );
   }
 
-  Future<void> addValueToSQLite()async{}
+  Future<void> addValueToSQLite() async {
+    OrderModel orderModel = OrderModel(
+      idOrder: currentProductModel.id,
+      order: currentProductModel.nameFood,
+      price: currentProductModel.price,
+    );
+
+    
+    orderHelper.insertOrder(orderModel);
+
+    List<OrderModel> orderModels = await orderHelper.getAllSQLite();
+    print('orderModel.length ====>>> ${orderModels.length}');
+
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(floatingActionButton: orderButton(),
+    return Scaffold(
+      floatingActionButton: orderButton(),
       appBar: AppBar(),
       body: Center(
         child: Column(
