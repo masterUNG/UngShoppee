@@ -29,8 +29,7 @@ class _DetailState extends State<Detail> {
       child: Icon(Icons.add),
       onPressed: () {
         addValueToSQLite();
-
-        // Navigator.of(context).pop();
+        Navigator.of(context).pop();
       },
     );
   }
